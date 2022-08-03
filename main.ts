@@ -127,7 +127,15 @@ namespace SmartMatrix {
             }
         }
 
-        writeAnimation(strip: neopixel.Strip, anim: Buffer) {
+        /**
+         * draw an animation by microsoft expressive pixels
+         * the pixels were exported as hex stored as a variable and loaded to the buffer
+         */
+        //% blockId="Matrix_drawBitmap" block="%matrix draw expressivePixels animation"
+        //% weight=85
+        //% colour.shadow=neopixel_colors
+        //% blockGap=8 parts="SmartMatrix"
+        writeAnimation(anim: Buffer) {
             const length = anim.length;
             let palette = [];
 
@@ -139,7 +147,7 @@ namespace SmartMatrix {
             let PaletteLength = PaletteLengthBytes / 3;
             let FramesLength = (anim[9] << 24) | (anim[8] << 16) | (anim[7] << 8) | anim[6];
             let frameDelayMS = 1000.0 / FrameRate;
-            let originalBrightness = strip.brightness;
+            let originalBrightness = this.strip.brightness;
             let activeFadeStep = 0;
             let activeFadeWait = 0;
 
@@ -172,10 +180,10 @@ namespace SmartMatrix {
                             paletteIdx = anim[framesOffset + frameByteOffset];
                             frameByteOffset++;
                             if(paletteIdx < PaletteLength) {
-                                strip.setPixelColor(pixelPos, palette[paletteIdx]);
+                                this.strip.setPixelColor(pixelPos, palette[paletteIdx]);
                             }
                         }
-                        strip.show();
+                        this.strip.show();
                         basic.pause(frameDelayMS);
                     }
                     else if(frameType== 80) { // 'P'
@@ -187,7 +195,7 @@ namespace SmartMatrix {
 
                         for(let pixelPos2 = 0; pixelPos2 < framePixelCount;pixelPos2++) {
                             // Process each represented pixel
-                            if(strip._length > 256) {
+                            if(this.strip._length > 256) {
                                 logicalPixelPosition = (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
                                 frameByteOffset += 2;
                             }
@@ -199,10 +207,10 @@ namespace SmartMatrix {
                             paletteIdx = anim[framesOffset + frameByteOffset];
                             frameByteOffset++;
                             if(paletteIdx < PaletteLength) {
-                                strip.setPixelColor(logicalPixelPosition, palette[paletteIdx]);
+                                this.strip.setPixelColor(logicalPixelPosition, palette[paletteIdx]);
                             }
                         }
-                        strip.show();
+                        this.strip.show();
                         basic.pause(frameDelayMS);
                     }
                     else if(frameType == 68 ) { // 'D'
@@ -222,18 +230,18 @@ namespace SmartMatrix {
                         while(activeFadeStep > 0)
                         {
                             let stepBrightness = ((originalBrightness + 0.1) / 10) * activeFadeStep;
-                            strip.setBrightness(stepBrightness);
-                            strip.show();
+                            this.strip.setBrightness(stepBrightness);
+                            this.strip.show();
 
                             basic.pause(activeFadeWait);
                             activeFadeStep--;
                         }
-                        strip.setBrightness(originalBrightness);
-                        strip.clear();
-                        strip.show();
+                        this.strip.setBrightness(originalBrightness);
+                        this.strip.clear();
+                        this.strip.show();
                     }
                 }
-                strip.clear();
+                this.strip.clear();
             }
         }
     }
