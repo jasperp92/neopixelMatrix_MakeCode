@@ -5,11 +5,11 @@
  */
 
 
-enum drawDirection{
+enum drawDirection {
     //% block="Normal"
-    normal=1,
+    normal = 1,
     //% block="Mirrored"
-    mirrored=0
+    mirrored = 0
 }
 
 //% weight=6 color=#00CC60 icon="\uf110"
@@ -62,11 +62,11 @@ namespace SmartMatrix {
         //% colour.shadow=neopixel_colors
         //% blockGap=8 parts="SmartMatrix"
         setPixel(x: number, y: number, colour: number): void {
-            if (x < 0 || x > this.Width || y < 0 || y > this.Height) { return } //If the pixel does not fit on screen, do not draw it
-            if (!(x % 2)) { this.strip.setPixelColor(y + (x * this.Height), colour); } //Because of the zig-zag formation of the panel all even rows (including 0) are drawn top to bottom
-            else { this.strip.setPixelColor((this.Height - y-1) + (x * this.Height), colour); } //While all odd rows are drawn bottom to top
+            if (x < 0 || x > this.Height || y < 0 || y > this.Width) { return } //If the pixel does not fit on screen, do not draw it
+            if (y % 2) { this.strip.setPixelColor(x + (y * this.Width), colour); } //Because of the zig-zag formation of the panel all even rows (including 0) are drawn top to bottom
+            else { this.strip.setPixelColor((this.Width - x - 1) + (y * this.Width), colour); } //While all odd rows are drawn bottom to top
         }
-        
+
         /**
          * scroll a string of text on the matrix
          * @param text the text to scroll 
@@ -79,7 +79,7 @@ namespace SmartMatrix {
         //% colour.shadow=neopixel_colors
         //% speed.min=1 speed.max=2000 speed.defl=1200
         //% blockGap=8 parts="SmartMatrix"
-        scrollText(text: string, speed: number, yoffset:number, colour: number): void {
+        scrollText(text: string, speed: number, yoffset: number, colour: number): void {
             this.strip.clear();
             for (let Xpos = this.Width; Xpos > -6 * text.length; Xpos--) {//for loop to scroll across the entire matrix
                 for (let letter = 0; letter < text.length; letter++) {//for loop to retrieve all the letters from te text
@@ -87,7 +87,7 @@ namespace SmartMatrix {
                     this.drawBitmap(bitmap, Xpos + (6 * letter), yoffset, 7, 8, colour, drawDirection.normal)
                 }
                 this.strip.show();
-                basic.pause(2000 / speed);
+                basic.pause(speed);
                 this.strip.clear();
             }
         }
@@ -109,17 +109,17 @@ namespace SmartMatrix {
         //% colour.shadow=neopixel_colors
         //% advanced=true
         //% direction.shadow="drawDirection"
-        drawBitmap(bitmap: number[], x: number, y: number, width: number, height: number, colour: number, direction:drawDirection): void {
-            let byteInLine = Math.floor((width+7)/8) //The amount of bytes per horizontal line in the bitmap
-            for(let Ypos=0; Ypos<height; Ypos++){
-                for(let hzScan=0; hzScan<byteInLine; hzScan++){
-                    for(let bitmask=0; bitmask<8; bitmask++){
-                        if(bitmap[(Ypos*byteInLine)+hzScan] & 0x01<<bitmask){
-                            if(direction){ 
-                                this.setPixel(x+(8*hzScan)-bitmask+7, y+Ypos, colour)
+        drawBitmap(bitmap: number[], x: number, y: number, width: number, height: number, colour: number, direction: drawDirection): void {
+            let byteInLine = Math.floor((width + 7) / 8) //The amount of bytes per horizontal line in the bitmap
+            for (let Ypos = 0; Ypos < height; Ypos++) {
+                for (let hzScan = 0; hzScan < byteInLine; hzScan++) {
+                    for (let bitmask = 0; bitmask < 8; bitmask++) {
+                        if (bitmap[(Ypos * byteInLine) + hzScan] & 0x01 << bitmask) {
+                            if (direction) {
+                                this.setPixel(x + (8 * hzScan) - bitmask + 7, y + Ypos, colour)
                             }
-                            else{
-                                this.setPixel(width-(x+(8*hzScan)-bitmask+7)-1, y+Ypos, colour)
+                            else {
+                                this.setPixel(width - (x + (8 * hzScan) - bitmask + 7) - 1, y + Ypos, colour)
                             }
                         }
                     }
@@ -131,11 +131,11 @@ namespace SmartMatrix {
          * draw an animation by microsoft expressive pixels
          * the pixels were exported as hex stored as a variable and loaded to the buffer
          */
-        //% blockId="Matrix_drawBitmap" block="%matrix draw expressivePixels animation"
+        //% blockId="Matrix_writeAnimation" block="%matrix draw expressivePixels animation"
         //% weight=85
         //% colour.shadow=neopixel_colors
         //% blockGap=8 parts="SmartMatrix"
-        writeAnimation(anim: Buffer) {
+        writeAnimation(anim: Buffer, speed?: number) {
             const length = anim.length;
             let palette = [];
 
@@ -146,89 +146,91 @@ namespace SmartMatrix {
             let PaletteLengthBytes = (anim[5] << 8) | anim[4];
             let PaletteLength = PaletteLengthBytes / 3;
             let FramesLength = (anim[9] << 24) | (anim[8] << 16) | (anim[7] << 8) | anim[6];
-            let frameDelayMS = 1000.0 / FrameRate;
+            let frameDelayMS = speed;
+            if (frameDelayMS === null || frameDelayMS === undefined) {
+                frameDelayMS = 1000.0 / FrameRate;
+            }
             let originalBrightness = this.strip.brightness;
             let activeFadeStep = 0;
             let activeFadeWait = 0;
 
             let paletteOffset = 10;
-            for(let idx = 0; idx < PaletteLength;idx++) {
+            for (let idx = 0; idx < PaletteLength; idx++) {
                 const c = neopixel.rgb(anim[paletteOffset + idx * 3], anim[paletteOffset + idx * 3 + 1], anim[paletteOffset + idx * 3 + 2]);
                 palette.push(c);
             }
 
-            if(LoopCount == 0)
+            if (LoopCount == 0)
                 LoopCount = 1;
-            while(LoopCount-- > 0)
-            {
-                let framesOffset = paletteOffset + PaletteLengthBytes;            
+            while (LoopCount-- > 0) {
+                let framesOffset = paletteOffset + PaletteLengthBytes;
                 let frameByteOffset = 0;
                 let paletteIdx = 0;
 
-                for(let frameIdx = 0; frameIdx < FrameCount;frameIdx++) {
+                for (let frameIdx = 0; frameIdx < FrameCount; frameIdx++) {
                     let framePixelCount = 0;
                     let frameType = anim[framesOffset + frameByteOffset];
                     frameByteOffset++;
 
-                    if(frameType == 73) {
+                    if (frameType == 73) {
                         // Read the number of pixels represented in this frame type
-                        framePixelCount =  (anim[framesOffset + frameByteOffset + 0] << 8) | anim[framesOffset + frameByteOffset + 1];
+                        framePixelCount = (anim[framesOffset + frameByteOffset + 0] << 8) | anim[framesOffset + frameByteOffset + 1];
                         frameByteOffset += 2;
 
                         // Process each represented pixel
-                        for(let pixelPos = 0; pixelPos < framePixelCount;pixelPos++) {
+                        for (let pixelPos = 0; pixelPos < framePixelCount; pixelPos++) {
                             paletteIdx = anim[framesOffset + frameByteOffset];
                             frameByteOffset++;
-                            if(paletteIdx < PaletteLength) {
+                            if (paletteIdx < PaletteLength) {
                                 this.strip.setPixelColor(pixelPos, palette[paletteIdx]);
                             }
                         }
                         this.strip.show();
                         basic.pause(frameDelayMS);
                     }
-                    else if(frameType== 80) { // 'P'
+                    else if (frameType == 80) { // 'P'
                         let logicalPixelPosition = 0;
 
                         // Read the number of pixels represented in this frame type
-                        framePixelCount =  (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
+                        framePixelCount = (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
                         frameByteOffset += 2;
 
-                        for(let pixelPos2 = 0; pixelPos2 < framePixelCount;pixelPos2++) {
+                        for (let pixelPos2 = 0; pixelPos2 < framePixelCount; pixelPos2++) {
                             // Process each represented pixel
-                            if(this.strip._length > 256) {
+                            if (this.strip._length > 256) {
                                 logicalPixelPosition = (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
                                 frameByteOffset += 2;
                             }
                             else {
                                 logicalPixelPosition = anim[framesOffset + frameByteOffset];
-                                frameByteOffset ++;
+                                frameByteOffset++;
                             }
 
                             paletteIdx = anim[framesOffset + frameByteOffset];
                             frameByteOffset++;
-                            if(paletteIdx < PaletteLength) {
+                            if (paletteIdx < PaletteLength) {
                                 this.strip.setPixelColor(logicalPixelPosition, palette[paletteIdx]);
                             }
                         }
                         this.strip.show();
                         basic.pause(frameDelayMS);
                     }
-                    else if(frameType == 68 ) { // 'D'
+                    else if (frameType == 68) { // 'D'
                         // Read the frame delay
-                        let waitMillis =  (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
+                        let waitMillis = (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
                         frameByteOffset += 2;
                         basic.pause(waitMillis);
                     }
-                    else if(frameType == 70) { 'F'
+                    else if (frameType == 70) {
+                        'F'
                         // Read the frame delay
-                        let activeFadeMillis =  (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
+                        let activeFadeMillis = (anim[framesOffset + frameByteOffset] << 8) | anim[framesOffset + frameByteOffset + 1];
                         frameByteOffset += 2;
 
                         activeFadeStep = 9;
                         activeFadeWait = (activeFadeMillis + 0.1) / 10;
 
-                        while(activeFadeStep > 0)
-                        {
+                        while (activeFadeStep > 0) {
                             let stepBrightness = ((originalBrightness + 0.1) / 10) * activeFadeStep;
                             this.strip.setBrightness(stepBrightness);
                             this.strip.show();
