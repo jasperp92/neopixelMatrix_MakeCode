@@ -62,9 +62,9 @@ namespace SmartMatrix {
         //% colour.shadow=neopixel_colors
         //% blockGap=8 parts="SmartMatrix"
         setPixel(x: number, y: number, colour: number): void {
-            if (x < 0 || x > this.Height || y < 0 || y > this.Width) { return } //If the pixel does not fit on screen, do not draw it
-            if (y % 2) { this.strip.setPixelColor(x + (y * this.Width), colour); } //Because of the zig-zag formation of the panel all even rows (including 0) are drawn top to bottom
-            else { this.strip.setPixelColor((this.Width - x - 1) + (y * this.Width), colour); } //While all odd rows are drawn bottom to top
+            if (x < 0 || x > this.Width || y < 0 || y > this.Height) { return } //If the pixel does not fit on screen, do not draw it
+            if (y % 2) { this.strip.setPixelColor(x + (y * this.Height), colour); } //Because of the zig-zag formation of the panel all even rows (including 0) are drawn top to bottom
+            else { this.strip.setPixelColor((this.Width - x - 1) + (y * this.Height), colour); } //While all odd rows are drawn bottom to top
         }
 
         /**
@@ -123,6 +123,26 @@ namespace SmartMatrix {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        /**
+ * draw a 2D array to the matrix
+ * @param arr2d -the 2 dimensional array with numbers or colours
+ * @param x -the postition on the x-axis (left is 0)
+ * @param y -the position on the y-axis (top is 0)
+ */
+        //% blockId="Matrix_drawB2D" block="%matrix draw 2D-Array %arr2d at x %xpos y %ypos in colour %colour"
+        //% weight=120
+        //% xpos.defl=0 ypos.defl=0
+        //% colour.shadow=neopixel_colors
+        //% advanced=true
+        //% direction.shadow="drawDirection"
+        draw2DArray(arr2d: number[][], xpos: number, ypos: number): void {
+            for (let x = 0; x < arr2d[0].length; x++) {
+                for (let y = 0; y < arr2d[1].length; y++) {
+                    this.setPixel(y + ypos, x + xpos, arr2d[y][x])
                 }
             }
         }
@@ -284,7 +304,6 @@ namespace SmartMatrix {
         return letterMap;
     }
 
-
 }
 const font8x6 = hex`
     0000000000000000 1038381010001000 6C6C480000000000 00287C28287C2800
@@ -311,3 +330,45 @@ const font8x6 = hex`
     0020782020281000 0000484848582800 0000444444281000 00004444547C2800
     0000484830484800 0000484848381060 0000780830407800 1820206020201800
     1010100010101000 3008080C08083000 2850000000000000`;
+
+
+
+namespace arrays {
+
+    //% blockId="rotate2DArraycounterclockwise" block="rotate 2D-Array %a counterclockwise"
+    //% weight=300
+    //% blockGap=8 parts="List"
+    //% advanced=true
+    export function rotateCounterClockwise(a: number[][]) {
+        let n = a.length;
+        for (let i = 0; i < n / 2; i++) {
+            for (let j = i; j < n - i - 1; j++) {
+                let tmp = a[i][j];
+                a[i][j] = a[j][n - i - 1];
+                a[j][n - i - 1] = a[n - i - 1][n - j - 1];
+                a[n - i - 1][n - j - 1] = a[n - j - 1][i];
+                a[n - j - 1][i] = tmp;
+            }
+        }
+        return a;
+    }
+
+    //% blockId="rotate2DArrayclockwise" block="rotate 2D-Array %a clockwise"
+    //% weight=330
+    //% blockGap=8 parts="List"
+    //% advanced=true
+    export function rotateClockwise(a: number[][]) {
+        let n = a.length;
+        for (let i = 0; i < n / 2; i++) {
+            for (let j = i; j < n - i - 1; j++) {
+                let tmp = a[i][j];
+                a[i][j] = a[n - j - 1][i];
+                a[n - j - 1][i] = a[n - i - 1][n - j - 1];
+                a[n - i - 1][n - j - 1] = a[j][n - i - 1];
+                a[j][n - i - 1] = tmp;
+            }
+        }
+        return a;
+    }
+
+}

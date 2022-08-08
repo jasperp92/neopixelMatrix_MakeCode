@@ -21,3 +21,16 @@ basic.forever(function () {
         basic.pause(500)
     }
 })
+
+// test 2
+
+let Leben = 3
+let matrix = SmartMatrix.create(DigitalPin.P0, 10, 10, null)
+let herz = arrays.rotateCounterClockwise([[Colors.Red, Colors.Off, Colors.Red], [Colors.Red, Colors.Red, Colors.Red], [Colors.Off, Colors.Red, Colors.Off]])
+basic.forever(function () {
+    for (let Index = 0; Index <= Leben - 1; Index++) {
+        matrix.draw2DArray(herz, 0, Index * 3)
+        matrix.show()
+    }
+})
+
