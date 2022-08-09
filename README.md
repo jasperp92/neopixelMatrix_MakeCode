@@ -1,6 +1,35 @@
+# MakeCode extension for the neopixel/WS2812B
+- it should work for the Calliope mini as well as the BBC Micro:Bit
+- merged functions from smartMatrix https://github.com/Shorts1999/pxt-smartmatrix and Expressive Pixels https://github.com/microsoft/ExpressivePixelsMakeCode with some minor code changes
+
+----
+### smartMatrix: draw2DArray
+
+![alt...](images/draw2darray.png)
+
+```blocks
+let lives = 3
+let matrix = SmartMatrix.create(DigitalPin.P0, 10, 10, null)
+let heart = [[Colors.Red, Colors.Off, Colors.Red], [Colors.Red, Colors.Red, Colors.Red], [Colors.Off, Colors.Red, Colors.Off]]
+basic.forever(function () {
+    for (let Index = 0; Index <= lives - 1; Index++) {
+        matrix.draw2DArray(heart, 0, Index * 3)
+        matrix.show()
+    }
+})
+```
+
+### Array: rotate 2DArray clockwise/counterclockwise
+
+![alt...](images/rotatearray.png)
+
+```blocks
+let heart = arrays.rotateCounterClockwise([[Colors.Red, Colors.Off, Colors.Red], [Colors.Red, Colors.Red, Colors.Red], [Colors.Off, Colors.Red, Colors.Off]])
+```
 
 > Diese Seite bei [https://jasperp92.github.io/neopixelmatrix_makecode/](https://jasperp92.github.io/neopixelmatrix_makecode/) öffnen
 
+----
 ## Als Erweiterung verwenden
 
 Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
