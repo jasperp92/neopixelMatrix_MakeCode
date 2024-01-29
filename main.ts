@@ -283,7 +283,7 @@ namespace SmartMatrix {
     //% blockGap=8 parts="SmartMatrix"
     export function create(pin: DigitalPin, matrixWidth: number, matrixHeight: number, mode: NeoPixelMode, snakePattern: boolean): Matrix {
         let matrix = new Matrix;
-        matrix.strip = neopixel.create(pin, matrixHeight * matrixWidth, mode, snakePattern);
+        matrix.strip = neopixel.create(pin, matrixHeight * matrixWidth, mode);
         matrix.Width = matrixWidth;
         matrix.Height = matrixHeight;
         matrix.strip.setMatrixWidth(matrixWidth, snakePattern);
