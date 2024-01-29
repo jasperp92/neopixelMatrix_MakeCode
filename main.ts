@@ -274,17 +274,19 @@ namespace SmartMatrix {
      * @param matrixWidth the amount of leds horizontally
      * @param matrixHeight the amount of leds vertically
      * @param mode the format/type of the LED
+     * @param mode the option if every second LED row is reversed
      */
-    //% blockId="Matrix_Create" block="Matrix at pin %pin|with a width of %matrixWidth |height of %matrixHeight | and with %mode pixeltype"
+    //% blockId="Matrix_Create" block="Matrix at pin %pin | width %matrixWidth |height %matrixHeight |pixeltype %mode |snake Pattern %snakePattern"
     //% weight=100
-    //% matrixWidth.defl=32 matrixHeight.defl=8
+    //% matrixWidth.defl=32 matrixHeight.defl=8 snakePattern.defl=false
     //% blockSetVariable=matrix
     //% blockGap=8 parts="SmartMatrix"
-    export function create(pin: DigitalPin, matrixWidth: number, matrixHeight: number, mode: NeoPixelMode): Matrix {
+    export function create(pin: DigitalPin, matrixWidth: number, matrixHeight: number, mode: NeoPixelMode, snakePattern: boolean): Matrix {
         let matrix = new Matrix;
-        matrix.strip = neopixel.create(pin, matrixHeight * matrixWidth, mode);
+        matrix.strip = neopixel.create(pin, matrixHeight * matrixWidth, mode, snakePattern);
         matrix.Width = matrixWidth;
         matrix.Height = matrixHeight;
+        matrix.strip.setMatrixWidth(matrixWidth, snakePattern);
 
         return matrix;
     }
